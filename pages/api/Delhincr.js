@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     // 4. Define the email options
     let mailOptions = {
       from: process.env.EMAIL_USER,      // The "From" email (best if domain-based)
-      to: 'tanweer2002.nice@gmail.com',  // Where you want to receive the inquiry
+      to: 'kli.advertising@gmail.com',  // Where you want to receive the inquiry
       subject: `Honda Car NCR Inquiry from ${name}`,
       text: `
         New inquiry received!
