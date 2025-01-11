@@ -9,6 +9,22 @@ export const config = {
 
 export default async function handler(req, res) {
   // Allow only GET requests
+    // ✅ Allow only specific domain
+    const allowedOrigin = 'http://127.0.0.1:5500';
+    const origin = req.headers.origin;
+  
+    if (origin !== allowedOrigin) {
+      return res.status(403).json({ error: 'Access denied. Unauthorized domain.' });
+    }
+  
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+  
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed. Use GET.' });
   }
