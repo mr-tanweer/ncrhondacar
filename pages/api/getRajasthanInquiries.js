@@ -9,7 +9,7 @@ export const config = {
 
 export default async function handler(req, res) {
   // ✅ Allow only specific domain
-  const allowedOrigin = 'https://kliadvt.com/';
+  const allowedOrigin = 'https://kliadvt.com';
   const origin = req.headers.origin;
 
   if (origin !== allowedOrigin) {
