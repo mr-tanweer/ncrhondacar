@@ -8,14 +8,14 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  // ✅ Allowed origin
-  const allowedOrigin = 'http://127.0.0.1:5500';
+  // ✅ Set CORS Headers
+  res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // 🛑 Check Origin or Referer
-  const origin = req.headers.origin || req.headers.referer;
-
-  if (!origin || !origin.startsWith(allowedOrigin)) {
-    return res.status(403).json({ error: 'Access denied. Unauthorized domain.' });
+  // ✅ Handle Preflight Requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
   // ✅ Allow only GET requests
