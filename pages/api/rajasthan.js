@@ -1,72 +1,89 @@
-import nodemailer from 'nodemailer';
 
-// Optional: Disable Next.js default body parser settings if needed
+import nodemailer from 'nodemailer';
+import dbConnect from '../../utils/dbConnect';
+import RajasthanEnquiry from '../../model/RajasthanEnquiry';
+
+// API configuration for body parser
 export const config = {
   api: {
-    bodyParser: true, 
+    bodyParser: true,
   },
 };
 
 export default async function handler(req, res) {
-  // ===== Enable CORS Headers =====
-  res.setHeader('Access-Control-Allow-Origin', '*');  
+  // Enable CORS for cross-origin requests
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle CORS preflight request
+  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  // =================================
 
-  // Only allow POST requests
+  // Allow only POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
   try {
-    // 1. Extract form data from the request body
+    // Extract data from the request body
     const { name, email, mobile, model, outlet } = req.body;
 
-    // 2. Basic validation
+    // Validate the required fields
     if (!name || !email || !mobile || !model || !outlet) {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-    // 3. Create a Nodemailer transporter
+    // Connect to MongoDB
+    await dbConnect();
+
+    // Save the inquiry data to the database
+    const newInquiry = new RajasthanEnquiry({
+      name,
+      email,
+      mobile,
+      model,
+      outlet,
+    });
+
+    await newInquiry.save();
+
+    // Set up Nodemailer transporter for sending emails
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS  
-      }
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    // 4. Define the email options
+    // Define the email content
     let mailOptions = {
-      from: process.env.EMAIL_USER,     
-      to: 'kli.advertising@gmail.com',  
+      from: process.env.EMAIL_USER,
+      to: 'kli.advertising@gmail.com',
       subject: `Honda Car Rajasthan Inquiry from ${name}`,
       text: `
-        New inquiry received!
+        New inquiry received:
 
         Name: ${name}
         Email: ${email}
         Mobile: ${mobile}
         Model: ${model}
         Outlet: ${outlet}
-       
       `,
-      replyTo: email 
+      replyTo: email,
     };
 
-    // 5. Send the email
+    // Send the email
     await transporter.sendMail(mailOptions);
 
-    // 6. Return success response
-    return res.status(200).json({ success: true, message: 'Email sent successfully!' });
+    // Send success response after saving data and sending the email
+    return res.status(200).json({ success: true, message: 'Inquiry saved and email sent successfully!' });
+
   } catch (err) {
-    console.error('Error sending email:', err);
-    return res.status(500).json({ error: 'Error sending email.' });
+    // Handle any errors during the process
+    console.error('Error:', err);
+    return res.status(500).json({ error: 'Error processing the inquiry.' });
   }
 }

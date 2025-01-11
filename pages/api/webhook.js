@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { connectToDatabase } from "../../utils/db";
+import { connectToDatabase } from "../../utils/dbConnect";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
